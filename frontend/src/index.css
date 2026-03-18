@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 96%;
+    --foreground: 30 10% 12%;
+
+    --card: 40 25% 94%;
+    --card-foreground: 30 10% 12%;
+
+    --popover: 40 33% 96%;
+    --popover-foreground: 30 10% 12%;
+
+    --primary: 18 55% 42%;
+    --primary-foreground: 40 33% 96%;
+
+    --secondary: 35 30% 88%;
+    --secondary-foreground: 30 10% 20%;
+
+    --muted: 35 20% 90%;
+    --muted-foreground: 30 8% 50%;
+
+    --accent: 18 55% 42%;
+    --accent-foreground: 40 33% 96%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 35 20% 85%;
+    --input: 35 20% 85%;
+    --ring: 18 55% 42%;
+
+    --radius: 0.375rem;
+
+    --sidebar-background: 40 25% 94%;
+    --sidebar-foreground: 30 10% 12%;
+    --sidebar-primary: 18 55% 42%;
+    --sidebar-primary-foreground: 40 33% 96%;
+    --sidebar-accent: 35 30% 88%;
+    --sidebar-accent-foreground: 30 10% 20%;
+    --sidebar-border: 35 20% 85%;
+    --sidebar-ring: 18 55% 42%;
+
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+
+    --shadow-soft: 0 2px 20px -4px hsl(30 10% 12% / 0.08);
+    --shadow-card: 0 4px 30px -6px hsl(30 10% 12% / 0.1);
+    --shadow-elevated: 0 12px 40px -10px hsl(30 10% 12% / 0.15);
+  }
+
+  .dark {
+    --background: 30 10% 8%;
+    --foreground: 40 20% 90%;
+    --card: 30 10% 12%;
+    --card-foreground: 40 20% 90%;
+    --popover: 30 10% 12%;
+    --popover-foreground: 40 20% 90%;
+    --primary: 18 55% 52%;
+    --primary-foreground: 30 10% 8%;
+    --secondary: 30 10% 16%;
+    --secondary-foreground: 40 20% 90%;
+    --muted: 30 10% 16%;
+    --muted-foreground: 40 10% 55%;
+    --accent: 18 55% 52%;
+    --accent-foreground: 30 10% 8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 10% 20%;
+    --input: 30 10% 20%;
+    --ring: 18 55% 52%;
+    --sidebar-background: 30 10% 10%;
+    --sidebar-foreground: 40 20% 90%;
+    --sidebar-primary: 18 55% 52%;
+    --sidebar-primary-foreground: 30 10% 8%;
+    --sidebar-accent: 30 10% 16%;
+    --sidebar-accent-foreground: 40 20% 90%;
+    --sidebar-border: 30 10% 20%;
+    --sidebar-ring: 18 55% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
