@@ -13,19 +13,22 @@ async function main() {
 
   const adminEmail = "admin@admin.com";
   const existing = await User.findOne({ email: adminEmail });
+
   if (!existing) {
     const passwordHash = await bcrypt.hash("admin1234", 10);
-    await User.create({ name: "Admin", email: adminEmail, passwordHash, role: "admin" });
+    await User.create({
+      name: "Admin",
+      email: adminEmail,
+      passwordHash,
+      role: "admin",
+    });
   }
 
-  // eslint-disable-next-line no-console
-  console.log(`Seeded ${seedProducts.length} products`);
+  console.log(`✅ Seeded ${seedProducts.length} products`);
   process.exit(0);
 }
 
 main().catch((e) => {
-  // eslint-disable-next-line no-console
   console.error(e);
   process.exit(1);
 });
-

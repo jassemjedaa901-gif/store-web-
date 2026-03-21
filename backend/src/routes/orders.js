@@ -52,12 +52,15 @@ ordersRouter.post("/", requireAuth, async (req, res) => {
     if (p.stock < it.quantity) return res.status(400).json({ error: "out_of_stock", productId: it.productId });
     totalPrice += p.price * it.quantity;
     items.push({
-      productId: p._id,
-      name: p.name,
-      price: p.price,
-      quantity: it.quantity,
-      image: p.image,
-    });
+  productId: p._id,
+  name: p.name,
+  price: p.price,
+  quantity: it.quantity,
+  image:
+    p.image && p.image.startsWith("http")
+      ? p.image
+      : `https://via.placeholder.com/600x400?text=${encodeURIComponent(p.name)}`,
+});
   }
 
   const order = await Order.create({
