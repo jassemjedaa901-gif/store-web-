@@ -47,10 +47,12 @@ apiRouter.get("/health", async (_req, res) => {
     console.error("DB Reconnect Error:", err);
   }
 
-  res.json({ 
-    ok: true, 
+  const dbOk = mongoose.connection.readyState === 1;
+  res.json({
+    ok: true,
     service: "store-web-backend",
-    db: mongoose.connection.readyState === 1 // السطر هذا هو اللي ناقصك!
+    db: dbOk,
+    mongoConfigured: Boolean(process.env.MONGO_URI),
   });
 });
 
