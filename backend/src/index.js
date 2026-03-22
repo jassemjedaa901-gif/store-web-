@@ -18,14 +18,23 @@ import { adminRouter } from "./routes/admin.js";
 
 const app = express();
 
-// 1. Connection DB (+ seed catalog if empty, dev only)
+// 1. Connection DB (+ seed catalog if empty)
 connectDb(process.env.MONGO_URI)
-  .then(() => seedIfEmpty())
-  .then(() => console.log(`MongoDB connected successfully`))
+  .then(async () => {
+    console.log(`MongoDB connected successfully`);
+    // Seed data only if DB is empty
+    await seedIfEmpty();
+  })
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || true, credentials: true }));
+
+// ✅ الـ CORS المفتوح باش الـ Frontend ينجم يكلم الـ Backend بلاش مشاكل
+app.use(cors({ 
+  origin: true, 
+  credentials: true 
+}));
+
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(rateLimit({ windowMs: 60_000, limit: 240 }));
@@ -37,7 +46,7 @@ apiRouter.use("/webhooks/stripe", stripeWebhookRouter);
 
 apiRouter.use(express.json({ limit: "1mb" }));
 
-// ✅ الـ Health Check المصلح باش يطلعلك حالة الـ DB
+// ✅ الـ Health Check اللي يطمنك على حالة الربط
 apiRouter.get("/health", async (_req, res) => {
   let connectError = null;
   try {
@@ -46,25 +55,16 @@ apiRouter.get("/health", async (_req, res) => {
     }
   } catch (err) {
     connectError = err;
-    console.error("DB Reconnect Error:", err);
   }
 
   const dbOk = mongoose.connection.readyState === 1;
-  const mongoConfigured = Boolean(process.env.MONGO_URI);
-  const payload = {
+  res.json({
     ok: true,
     service: "store-web-backend",
     db: dbOk,
-    mongoConfigured,
-  };
-  if (!dbOk && mongoConfigured) {
-    payload.hint =
-      "MongoDB refused the connection. On Atlas: Network Access allow 0.0.0.0/0 (or Vercel IPs), verify user/password, and check Vercel function logs for the full error.";
-    if (connectError?.message) {
-      payload.error = connectError.message;
-    }
-  }
-  res.json(payload);
+    mongoConfigured: Boolean(process.env.MONGO_URI),
+    error: connectError ? connectError.message : null
+  });
 });
 
 apiRouter.use("/auth", authRouter);
@@ -78,7 +78,7 @@ app.use("/api", apiRouter);
 // Error Handler
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({ error: "internal_error" });
+  res.status(500).json({ error: "internal_error", details: err.message });
 });
 
 // Export for Vercel
