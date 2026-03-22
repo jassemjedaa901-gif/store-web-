@@ -1,37 +1,24 @@
+// frontend/src/context/ProductsContext.js
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { api } from "@/lib/api"; 
+import { products as baseProducts } from "@/data/products";
 
-const ProductsContext = createContext(undefined);
+const ProductsContext = createContext();
 
 export function ProductsProvider({ children }) {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(baseProducts);
 
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const data = await api("/products"); 
-        setProducts(data.products);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
-  }, []);
+    localStorage.setItem("storeweb:products", JSON.stringify(products));
+  }, [products]);
 
   const value = useMemo(() => ({
     products,
-    loading,
-    getById: (id) => products.find((p) => p._id === id),
-  }), [products, loading]);
+    add: (p) => setProducts(prev => [...prev, p])
+  }), [products]);
 
   return <ProductsContext.Provider value={value}>{children}</ProductsContext.Provider>;
 }
 
 export function useProducts() {
-  const ctx = useContext(ProductsContext);
-  if (!ctx) throw new Error("useProducts must be used within ProductsProvider");
-  return ctx;
+  return useContext(ProductsContext);
 }

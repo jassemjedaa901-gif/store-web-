@@ -10,7 +10,6 @@ productsRouter.get("/", optionalAuth, async (req, res) => {
   const category = typeof req.query.category === "string" ? req.query.category.trim() : "";
   const all = req.query.all === "1";
 
-  /** @type {any} */
   const filter = {};
   const canSeeAll = all && (req.user?.role === "admin" || req.user?.role === "merchant");
   if (!canSeeAll) filter.active = true;
@@ -59,4 +58,3 @@ productsRouter.delete("/:id", requireAuth, requireRole(["admin", "merchant"]), a
   if (!product) return res.status(404).json({ error: "not_found" });
   res.json({ ok: true });
 });
-

@@ -17,48 +17,32 @@ import { adminRouter } from "./routes/admin.js";
 
 const app = express();
 
-// 1. Connection DB (Optimized for Serverless)
+// Connect DB
 connectDb(process.env.MONGO_URI)
   .then(() => console.log(`MongoDB connected successfully`))
   .catch(err => console.error("MongoDB connection error:", err));
 
 app.use(helmet());
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || true,
-    credentials: true,
-  })
-);
+app.use(cors({ origin: process.env.CLIENT_URL || true, credentials: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(rateLimit({ windowMs: 60_000, limit: 240 }));
+
 const apiRouter = express.Router();
 
-// IMPORTANT: Stripe webhook (Raw body needed)
+// Stripe webhook
 apiRouter.use("/webhooks/stripe", stripeWebhookRouter);
 
 apiRouter.use(express.json({ limit: "1mb" }));
-apiRouter.get("/health", async (_req, res) => {
-  try { 
-    if (mongoose.connection.readyState !== 1) {
-      await connectDb(process.env.MONGO_URI);
-    }
-  } catch (err) {
-    console.error("DB reconnect error in health check:", err);
-  }
-
-  res.json({ 
-    ok: true, 
-    service: "store-web-backend", 
-    db: mongoose.connection.readyState === 1 
-  });
+apiRouter.get("/health", (_req, res) => {
+  res.json({ ok: true, service: "store-web-backend" });
 });
 
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/products", productsRouter);
 apiRouter.use("/orders", ordersRouter);
 apiRouter.use("/payments", paymentsRouter);
-apiRouter.use("/admin", adminRouter); 
+apiRouter.use("/admin", adminRouter);
 
 app.use("/api", apiRouter);
 
@@ -68,13 +52,11 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "internal_error" });
 });
 
-// 2. Export for Vercel
-export default app; 
+// Export for Vercel
+export default app;
 
-// 3. Local Dev Only
+// Local dev
 if (process.env.NODE_ENV !== "production") {
-  const port = process.env.PORT || 4000;
-  app.listen(port, () => {
-    console.log(`API running locally on http://localhost:${port}`);
-  });
+  const port = process.env.PORT || 5000;
+  app.listen(port, () => console.log(`API running locally on http://localhost:${port}`));
 }
