@@ -17,7 +17,7 @@ import { adminRouter } from "./routes/admin.js";
 
 const app = express();
 
-// Connect DB
+// 1. Connection DB
 connectDb(process.env.MONGO_URI)
   .then(() => console.log(`MongoDB connected successfully`))
   .catch(err => console.error("MongoDB connection error:", err));
@@ -34,8 +34,22 @@ const apiRouter = express.Router();
 apiRouter.use("/webhooks/stripe", stripeWebhookRouter);
 
 apiRouter.use(express.json({ limit: "1mb" }));
-apiRouter.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "store-web-backend" });
+
+// ✅ الـ Health Check المصلح باش يطلعلك حالة الـ DB
+apiRouter.get("/health", async (_req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      await connectDb(process.env.MONGO_URI);
+    }
+  } catch (err) {
+    console.error("DB Reconnect Error:", err);
+  }
+
+  res.json({ 
+    ok: true, 
+    service: "store-web-backend",
+    db: mongoose.connection.readyState === 1 // السطر هذا هو اللي ناقصك!
+  });
 });
 
 apiRouter.use("/auth", authRouter);
