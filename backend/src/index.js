@@ -18,7 +18,6 @@ import { adminRouter } from "./routes/admin.js";
 const app = express();
 
 // 1. Connection DB (Optimized for Serverless)
-// نحينا الـ localhost باش Vercel يركز كان مع MONGO_URI
 connectDb(process.env.MONGO_URI)
   .then(() => console.log(`MongoDB connected successfully`))
   .catch(err => console.error("MongoDB connection error:", err));
@@ -33,19 +32,14 @@ app.use(
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(rateLimit({ windowMs: 60_000, limit: 240 }));
-
-// 🔑 الـ Router للـ API
 const apiRouter = express.Router();
 
 // IMPORTANT: Stripe webhook (Raw body needed)
 apiRouter.use("/webhooks/stripe", stripeWebhookRouter);
 
 apiRouter.use(express.json({ limit: "1mb" }));
-
-// ✅ الـ Health Check الجديد: يثبت بالرسمي في الـ DB قبل ما يجاوب
 apiRouter.get("/health", async (_req, res) => {
-  try {
-    // إذا الـ DB ماهيش مربوطة (readyState 1)، يحاول يربط مرة أخرى
+  try { 
     if (mongoose.connection.readyState !== 1) {
       await connectDb(process.env.MONGO_URI);
     }
