@@ -1,39 +1,31 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { products as baseProducts } from "@/data/products";
-import { readJson, writeJson } from "@/lib/storage";
+import { api } from "@/lib/api"; 
 
 const ProductsContext = createContext(undefined);
 
-function normalizeProducts(list) {
-  const map = new Map();
-  for (const p of list) map.set(p.id, p);
-  return Array.from(map.values());
-}
-
 export function ProductsProvider({ children }) {
-  const [managed, setManaged] = useState(() => {
-    const stored = readJson("storeweb:v1:products", null);
-    return stored?.products?.length ? stored.products : baseProducts;
-  });
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    writeJson("storeweb:v1:products", { products: managed });
-  }, [managed]);
+    async function fetchProducts() {
+      try {
+        const data = await api("/products"); 
+        setProducts(data.products);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
 
-  const value = useMemo(() => {
-    const products = normalizeProducts(managed);
-    return {
-      products,
-      getById: (id) => products.find((p) => p.id === id),
-      upsert: (p) =>
-        setManaged((prev) => {
-          const next = prev.some((x) => x.id === p.id) ? prev.map((x) => (x.id === p.id ? p : x)) : [p, ...prev];
-          return normalizeProducts(next);
-        }),
-      remove: (id) => setManaged((prev) => prev.filter((p) => p.id !== id)),
-      resetToDefaults: () => setManaged(baseProducts),
-    };
-  }, [managed]);
+  const value = useMemo(() => ({
+    products,
+    loading,
+    getById: (id) => products.find((p) => p._id === id),
+  }), [products, loading]);
 
   return <ProductsContext.Provider value={value}>{children}</ProductsContext.Provider>;
 }
@@ -43,4 +35,3 @@ export function useProducts() {
   if (!ctx) throw new Error("useProducts must be used within ProductsProvider");
   return ctx;
 }
-
