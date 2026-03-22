@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Store Web">
   <defs>
-    <linearGradient id="swg-brand" x1="20" y1="12" x2="108" y2="116" gradientUnits="userSpaceOnUse">
+    <linearGradient id="swg-favicon" x1="20" y1="12" x2="108" y2="116" gradientUnits="userSpaceOnUse">
       <stop stop-color="#C45C3A"/>
       <stop offset="1" stop-color="#7A3321"/>
     </linearGradient>
   </defs>
-  <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#swg-brand)"/>
+  <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#swg-favicon)"/>
   <path
     d="M44 58h40c6.6 0 12 5.4 12 12v34c0 6.6-5.4 12-12 12H44c-6.6 0-12-5.4-12-12V70c0-6.6 5.4-12 12-12Z"
     fill="#FAF7F2"

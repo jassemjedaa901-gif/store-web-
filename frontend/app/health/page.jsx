@@ -17,7 +17,7 @@ export default function HealthPage() {
   return (
     <div className="container mx-auto px-4 py-16 max-w-lg">
       <div className="flex flex-col items-center text-center gap-6 rounded-xl border border-border bg-background/90 p-8 shadow-sm">
-        <img src="/store-web-logo.svg" alt="Store Web" width={72} height={72} className="rounded-2xl w-[72px] h-[72px]" />
+        <img src="/icon.svg" alt="Store Web" width={72} height={72} className="rounded-2xl w-[72px] h-[72px]" />
         <div>
           <h1 className="font-display text-2xl font-semibold text-foreground">Store Web</h1>
           <p className="text-sm text-muted-foreground mt-1">État de l’API</p>

@@ -11,7 +11,18 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async redirects() {
-    return [{ source: "/logo.svg", destination: "/store-web-logo.svg", permanent: true }];
+    return [
+      { source: "/logo.svg", destination: "/icon.svg", permanent: true },
+      { source: "/store-web-logo.svg", destination: "/icon.svg", permanent: true },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/icon.svg",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600, must-revalidate" }],
+      },
+    ];
   },
   images: {
     remotePatterns: [

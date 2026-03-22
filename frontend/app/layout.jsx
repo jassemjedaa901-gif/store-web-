@@ -10,14 +10,19 @@ export const metadata = {
   metadataBase: new URL(siteUrl),
   title: "Store Web",
   description: "Store Web - Boutique en ligne",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml", sizes: "any" }],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   openGraph: {
     title: "Store Web",
     description: "Store Web - Boutique en ligne",
-    images: ["/store-web-logo.svg"],
+    images: ["/icon.svg"],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/store-web-logo.svg"],
+    images: ["/icon.svg"],
   },
 };
 
