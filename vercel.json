@@ -10,8 +10,16 @@
       "use": "@vercel/next"
     }
   ],
- "rewrites": [
-  { "source": "/api/(.*)", "destination": "/backend/src/index.js" },
-  { "source": "/((?!api/).*)", "destination": "/frontend/$1" }
-]
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/src/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
