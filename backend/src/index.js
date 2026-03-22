@@ -39,21 +39,32 @@ apiRouter.use(express.json({ limit: "1mb" }));
 
 // ✅ الـ Health Check المصلح باش يطلعلك حالة الـ DB
 apiRouter.get("/health", async (_req, res) => {
+  let connectError = null;
   try {
     if (mongoose.connection.readyState !== 1) {
       await connectDb(process.env.MONGO_URI);
     }
   } catch (err) {
+    connectError = err;
     console.error("DB Reconnect Error:", err);
   }
 
   const dbOk = mongoose.connection.readyState === 1;
-  res.json({
+  const mongoConfigured = Boolean(process.env.MONGO_URI);
+  const payload = {
     ok: true,
     service: "store-web-backend",
     db: dbOk,
-    mongoConfigured: Boolean(process.env.MONGO_URI),
-  });
+    mongoConfigured,
+  };
+  if (!dbOk && mongoConfigured) {
+    payload.hint =
+      "MongoDB refused the connection. On Atlas: Network Access allow 0.0.0.0/0 (or Vercel IPs), verify user/password, and check Vercel function logs for the full error.";
+    if (connectError?.message) {
+      payload.error = connectError.message;
+    }
+  }
+  res.json(payload);
 });
 
 apiRouter.use("/auth", authRouter);

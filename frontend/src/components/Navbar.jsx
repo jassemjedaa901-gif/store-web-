@@ -22,7 +22,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link href="/" className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight text-foreground">
-          <img src="/logo.svg" alt="Store Web" className="w-7 h-7" />
+          <img src="/store-web-logo.svg" alt="Store Web" className="w-7 h-7" width={28} height={28} />
           Store Web
         </Link>
 

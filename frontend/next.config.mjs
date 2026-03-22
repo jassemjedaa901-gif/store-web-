@@ -10,6 +10,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    return [{ source: "/logo.svg", destination: "/store-web-logo.svg", permanent: true }];
+  },
   images: {
     remotePatterns: [
       { protocol: "http", hostname: "localhost", port: "3000" },
