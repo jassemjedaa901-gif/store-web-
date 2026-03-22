@@ -17,6 +17,11 @@ import { adminRouter } from "./routes/admin.js";
 
 const app = express();
 
+// 1. Connection DB (Optimized for Serverless)
+connectDb(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/storeweb")
+  .then(() => console.log(`MongoDB connected`))
+  .catch(err => console.error("MongoDB connection error:", err));
+
 app.use(helmet());
 app.use(
   cors({
@@ -28,13 +33,13 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(rateLimit({ windowMs: 60_000, limit: 240 }));
 
-// Stripe webhook needs raw body
+// IMPORTANT: Stripe webhook (Must be BEFORE express.json)
 app.use("/webhooks/stripe", stripeWebhookRouter);
 
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "store-web-backend" });
+  res.json({ ok: true, service: "store-web-backend", db: mongoose.connection.readyState === 1 });
 });
 
 app.use("/auth", authRouter);
@@ -44,17 +49,17 @@ app.use("/payments", paymentsRouter);
 app.use("/admin", adminRouter);
 
 app.use((err, _req, res, _next) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   res.status(500).json({ error: "internal_error" });
 });
 
-const port = Number(process.env.PORT || 4000);
-await connectDb(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/storeweb");
-// eslint-disable-next-line no-console
-console.log(`MongoDB connected (${mongoose.connection.name})`);
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`API running on http://localhost:${port}`);
-});
+// 2. Export for Vercel (No app.listen needed for prod)
+export default app; 
 
+// 3. Optional: Local Dev Only
+if (process.env.NODE_ENV !== "production") {
+  const port = process.env.PORT || 4000;
+  app.listen(port, () => {
+    console.log(`API running locally on http://localhost:${port}`);
+  });
+}
