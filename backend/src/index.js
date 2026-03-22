@@ -18,8 +18,9 @@ import { adminRouter } from "./routes/admin.js";
 const app = express();
 
 // 1. Connection DB (Optimized for Serverless)
-connectDb(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/storeweb")
-  .then(() => console.log(`MongoDB connected`))
+// نحينا الـ localhost باش Vercel يركز كان مع MONGO_URI
+connectDb(process.env.MONGO_URI)
+  .then(() => console.log(`MongoDB connected successfully`))
   .catch(err => console.error("MongoDB connection error:", err));
 
 app.use(helmet());
@@ -33,7 +34,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(rateLimit({ windowMs: 60_000, limit: 240 }));
 
-// 🔑 الـ Router هذا يضمن إنو Express يفهم الـ prefix "/api"
+// 🔑 الـ Router للـ API
 const apiRouter = express.Router();
 
 // IMPORTANT: Stripe webhook (Raw body needed)
@@ -41,7 +42,17 @@ apiRouter.use("/webhooks/stripe", stripeWebhookRouter);
 
 apiRouter.use(express.json({ limit: "1mb" }));
 
-apiRouter.get("/health", (_req, res) => {
+// ✅ الـ Health Check الجديد: يثبت بالرسمي في الـ DB قبل ما يجاوب
+apiRouter.get("/health", async (_req, res) => {
+  try {
+    // إذا الـ DB ماهيش مربوطة (readyState 1)، يحاول يربط مرة أخرى
+    if (mongoose.connection.readyState !== 1) {
+      await connectDb(process.env.MONGO_URI);
+    }
+  } catch (err) {
+    console.error("DB reconnect error in health check:", err);
+  }
+
   res.json({ 
     ok: true, 
     service: "store-web-backend", 
@@ -54,6 +65,7 @@ apiRouter.use("/products", productsRouter);
 apiRouter.use("/orders", ordersRouter);
 apiRouter.use("/payments", paymentsRouter);
 apiRouter.use("/admin", adminRouter); 
+
 app.use("/api", apiRouter);
 
 // Error Handler
