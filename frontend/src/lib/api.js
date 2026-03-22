@@ -1,20 +1,33 @@
 /**
- * Backend mounts JSON routes under `/api` (see backend src/index.js: app.use("/api", apiRouter)).
- * NEXT_PUBLIC_API_URL should be the server origin only, e.g. http://localhost:5000
- * (we append /api here; if you already set .../api, we avoid doubling it).
+ * Backend mounts JSON routes under `/api` (backend: app.use("/api", apiRouter)).
+ *
+ * - If NEXT_PUBLIC_API_URL is set → use it (+ /api if missing).
+ * - Else in the browser on localhost → http://localhost:5000/api (Next dev + Express local).
+ * - Else in the browser (e.g. Vercel) → same origin /api (monorepo: front + API on one domain).
+ * - Else (SSR without window) → http://localhost:5000/api.
  */
-function resolveApiBase() {
-  const raw = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").trim();
-  const origin = raw.replace(/\/+$/, "");
-  if (origin.endsWith("/api")) return origin;
-  return `${origin}/api`;
+export function getApiBase() {
+  const env = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (env) {
+    const origin = env.replace(/\/+$/, "");
+    return origin.endsWith("/api") ? origin : `${origin}/api`;
+  }
+  if (typeof window !== "undefined") {
+    const h = window.location.hostname;
+    if (h === "localhost" || h === "127.0.0.1") {
+      return "http://localhost:5000/api";
+    }
+    return `${window.location.origin.replace(/\/+$/, "")}/api`;
+  }
+  return "http://localhost:5000/api";
 }
 
-export const API_BASE = resolveApiBase();
-
-/** True when no NEXT_PUBLIC_API_URL was set at build time (defaults to localhost). */
+/** True when requests use the default local Express URL (localhost:5000), not same-origin prod. */
 export function isUsingDefaultLocalApi() {
-  return !process.env.NEXT_PUBLIC_API_URL;
+  if (process.env.NEXT_PUBLIC_API_URL) return false;
+  if (typeof window === "undefined") return true;
+  const h = window.location.hostname;
+  return h === "localhost" || h === "127.0.0.1";
 }
 
 const storageKeys = {
@@ -55,7 +68,7 @@ function getRefreshToken() {
 async function refreshTokens() {
   const refreshToken = getRefreshToken();
   if (!refreshToken) throw new Error("no_refresh_token");
-  const res = await fetch(`${API_BASE}/auth/refresh`, {
+  const res = await fetch(`${getApiBase()}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken }),
@@ -67,7 +80,7 @@ async function refreshTokens() {
 }
 
 export async function api(path, options = {}) {
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const url = path.startsWith("http") ? path : `${getApiBase()}${path}`;
   const headers = new Headers(options.headers || {});
   const token = getAccessToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);

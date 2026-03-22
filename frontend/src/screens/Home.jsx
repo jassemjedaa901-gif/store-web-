@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api, API_BASE, isUsingDefaultLocalApi } from "@/lib/api";
+import { api, getApiBase, isUsingDefaultLocalApi } from "@/lib/api";
 import Image from "next/image";
 
 const Home = () => {
@@ -104,35 +104,20 @@ const Home = () => {
           ) : isError ? (
             <div className="col-span-full space-y-2 text-destructive">
               <p className="font-medium">Impossible de charger les produits (API injoignable).</p>
-              {typeof window !== "undefined" &&
-              isUsingDefaultLocalApi() &&
-              window.location.hostname !== "localhost" &&
-              window.location.hostname !== "127.0.0.1" ? (
-                <p className="text-sm text-foreground font-normal leading-relaxed max-w-2xl">
-                  Tu es sur un site déployé (ex. Vercel) mais <code className="rounded bg-muted px-1 py-0.5 text-xs">NEXT_PUBLIC_API_URL</code>{" "}
-                  n’est pas défini au build : le front appelle encore{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">localhost:5000</code>, ce qui ne marche pas pour les visiteurs.
-                  <br />
-                  <span className="text-muted-foreground">
-                    Dans Vercel → Settings → Environment Variables : ajoute{" "}
-                    <code className="rounded bg-muted px-0.5">NEXT_PUBLIC_API_URL</code> = l’URL HTTPS publique de ton API (Render, Railway, Fly, etc.), puis{" "}
-                    <strong>redéploie</strong>. Côté API, mets aussi <code className="rounded bg-muted px-0.5">CLIENT_URL</code> = l’URL de ton front (ex.{" "}
-                    <code className="rounded bg-muted px-0.5">https://ton-app.vercel.app</code>) pour le CORS.
-                  </span>
-                </p>
-              ) : (
-                <p className="text-sm text-foreground font-normal">
-                  API utilisée : <code className="rounded bg-muted px-1 py-0.5 text-xs">{API_BASE}</code>
-                  {isUsingDefaultLocalApi() ? (
-                    <>
-                      . Démarre le backend Express en local sur le port 5000, ou définis{" "}
-                      <code className="rounded bg-muted px-0.5 text-xs">NEXT_PUBLIC_API_URL</code> dans <code className="rounded bg-muted px-0.5 text-xs">.env.local</code>.
-                    </>
-                  ) : (
-                    <> — vérifie que l’API est en ligne et que le CORS autorise cette origine.</>
-                  )}
-                </p>
-              )}
+              <p className="text-sm text-foreground font-normal">
+                URL appelée : <code className="rounded bg-muted px-1 py-0.5 text-xs">{getApiBase()}</code>
+                {isUsingDefaultLocalApi() ? (
+                  <>
+                    . Démarre le backend sur le port 5000 ou définis{" "}
+                    <code className="rounded bg-muted px-0.5 text-xs">NEXT_PUBLIC_API_URL</code> dans <code className="rounded bg-muted px-0.5 text-xs">.env.local</code>.
+                  </>
+                ) : (
+                  <>
+                    . Vérifie que le déploiement répond (MongoDB <code className="rounded bg-muted px-0.5 text-xs">MONGO_URI</code> sur Vercel,{" "}
+                    <code className="rounded bg-muted px-0.5 text-xs">CLIENT_URL</code> = URL du site pour le CORS).
+                  </>
+                )}
+              </p>
             </div>
           ) : (
             products.map((product, i) => (
