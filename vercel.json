@@ -10,14 +10,8 @@
       "use": "@vercel/next"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/backend/src/index.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
-    }
-  ]
+ "rewrites": [
+  { "source": "/api/(.*)", "destination": "/backend/src/index.js" },
+  { "source": "/((?!api/).*)", "destination": "/frontend/$1" }
+]
 }

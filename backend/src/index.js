@@ -33,30 +33,39 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(rateLimit({ windowMs: 60_000, limit: 240 }));
 
-// IMPORTANT: Stripe webhook (Must be BEFORE express.json)
-app.use("/webhooks/stripe", stripeWebhookRouter);
+// 🔑 الـ Router هذا يضمن إنو Express يفهم الـ prefix "/api"
+const apiRouter = express.Router();
 
-app.use(express.json({ limit: "1mb" }));
+// IMPORTANT: Stripe webhook (Raw body needed)
+apiRouter.use("/webhooks/stripe", stripeWebhookRouter);
 
-app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "store-web-backend", db: mongoose.connection.readyState === 1 });
+apiRouter.use(express.json({ limit: "1mb" }));
+
+apiRouter.get("/health", (_req, res) => {
+  res.json({ 
+    ok: true, 
+    service: "store-web-backend", 
+    db: mongoose.connection.readyState === 1 
+  });
 });
 
-app.use("/auth", authRouter);
-app.use("/products", productsRouter);
-app.use("/orders", ordersRouter);
-app.use("/payments", paymentsRouter);
-app.use("/admin", adminRouter);
+apiRouter.use("/auth", authRouter);
+apiRouter.use("/products", productsRouter);
+apiRouter.use("/orders", ordersRouter);
+apiRouter.use("/payments", paymentsRouter);
+apiRouter.use("/admin", adminRouter); 
+app.use("/api", apiRouter);
 
+// Error Handler
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(500).json({ error: "internal_error" });
 });
 
-// 2. Export for Vercel (No app.listen needed for prod)
+// 2. Export for Vercel
 export default app; 
 
-// 3. Optional: Local Dev Only
+// 3. Local Dev Only
 if (process.env.NODE_ENV !== "production") {
   const port = process.env.PORT || 4000;
   app.listen(port, () => {
