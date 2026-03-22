@@ -1,4 +1,21 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+/**
+ * Backend mounts JSON routes under `/api` (see backend src/index.js: app.use("/api", apiRouter)).
+ * NEXT_PUBLIC_API_URL should be the server origin only, e.g. http://localhost:5000
+ * (we append /api here; if you already set .../api, we avoid doubling it).
+ */
+function resolveApiBase() {
+  const raw = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").trim();
+  const origin = raw.replace(/\/+$/, "");
+  if (origin.endsWith("/api")) return origin;
+  return `${origin}/api`;
+}
+
+export const API_BASE = resolveApiBase();
+
+/** True when no NEXT_PUBLIC_API_URL was set at build time (defaults to localhost). */
+export function isUsingDefaultLocalApi() {
+  return !process.env.NEXT_PUBLIC_API_URL;
+}
 
 const storageKeys = {
   access: "storeweb:v2:accessToken",

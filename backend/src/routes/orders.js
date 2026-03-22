@@ -9,6 +9,26 @@ export const ordersRouter = express.Router();
 
 ordersRouter.get("/me", requireAuth, async (req, res) => {
   const orders = await Order.find({ userId: req.user.id }).sort({ createdAt: -1 }).lean();
+  const productIds = [
+    ...new Set(
+      orders.flatMap((o) => (o.items || []).map((it) => it.productId).filter(Boolean).map((id) => String(id)))
+    ),
+  ];
+  if (productIds.length) {
+    const products = await Product.find({ _id: { $in: productIds } }).select("image").lean();
+    const imageById = new Map(products.map((p) => [String(p._id), p.image]));
+    for (const o of orders) {
+      for (const it of o.items || []) {
+        const stored = it.image || "";
+        const fromProduct = imageById.get(String(it.productId));
+        const legacyPlaceholder = stored.includes("via.placeholder.com");
+        const missing = !String(stored).trim();
+        if (fromProduct && (legacyPlaceholder || missing)) {
+          it.image = fromProduct;
+        }
+      }
+    }
+  }
   res.json({ orders });
 });
 
@@ -52,15 +72,12 @@ ordersRouter.post("/", requireAuth, async (req, res) => {
     if (p.stock < it.quantity) return res.status(400).json({ error: "out_of_stock", productId: it.productId });
     totalPrice += p.price * it.quantity;
     items.push({
-  productId: p._id,
-  name: p.name,
-  price: p.price,
-  quantity: it.quantity,
-  image:
-    p.image && p.image.startsWith("http")
-      ? p.image
-      : `https://via.placeholder.com/600x400?text=${encodeURIComponent(p.name)}`,
-});
+      productId: p._id,
+      name: p.name,
+      price: p.price,
+      quantity: it.quantity,
+      image: p.image,
+    });
   }
 
   const order = await Order.create({

@@ -5,6 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+function resolveOrderItemImageSrc(image) {
+  const raw = String(image || "").trim();
+  if (!raw) return "/placeholder.svg";
+  if (raw.includes("via.placeholder.com")) return "/placeholder.svg";
+  if (raw.startsWith("http")) return raw;
+  if (typeof window === "undefined") return "/placeholder.svg";
+  return `${window.location.origin}${raw.startsWith("/") ? raw : `/${raw}`}`;
+}
+
 const Orders = () => {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
@@ -83,13 +92,10 @@ const Orders = () => {
                     {/* 🔥 IMAGE FIX */}
                     <div className="w-14 h-14 rounded-md overflow-hidden bg-secondary shrink-0">
                       <img
-                        src={
-                          it.image?.startsWith("http")
-                            ? it.image
-                            : `${typeof window !== "undefined" ? window.location.origin : ""}${it.image}`
-                        }
+                        src={resolveOrderItemImageSrc(it.image)}
                         alt={it.name}
                         className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
                         onError={(e) => {
                           e.currentTarget.src = "/placeholder.svg";
                         }}

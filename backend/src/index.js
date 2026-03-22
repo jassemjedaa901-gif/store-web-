@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 import mongoose from "mongoose";
 
 import { connectDb } from "./lib/db.js";
+import { seedIfEmpty } from "./lib/seed-if-empty.js";
 import { authRouter } from "./routes/auth.js";
 import { productsRouter } from "./routes/products.js";
 import { ordersRouter } from "./routes/orders.js";
@@ -17,10 +18,11 @@ import { adminRouter } from "./routes/admin.js";
 
 const app = express();
 
-// 1. Connection DB
+// 1. Connection DB (+ seed catalog if empty, dev only)
 connectDb(process.env.MONGO_URI)
+  .then(() => seedIfEmpty())
   .then(() => console.log(`MongoDB connected successfully`))
-  .catch(err => console.error("MongoDB connection error:", err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || true, credentials: true }));
