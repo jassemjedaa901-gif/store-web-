@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { toast } from "@/components/ui/sonner";
 import { ShoppingBag } from "lucide-react";
@@ -10,8 +10,9 @@ import { api } from "@/lib/api";
 
 const ProductDetails = () => {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id;
-  const { addToCart } = useCart();
+  const { addToCart, setCart } = useCart();
 
   const { data, isLoading } = useQuery({
     queryKey: ["product", id],
@@ -86,6 +87,16 @@ const ProductDetails = () => {
             >
               <ShoppingBag size={16} />
               Ajouter au panier
+            </button>
+            <button
+              onClick={() => {
+                setCart([{ ...product, quantity: 1 }]);
+                toast.success("Achat direct", { description: "Redirection vers checkout" });
+                router.push("/checkout");
+              }}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md border border-border text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Buy Now
             </button>
             <Link
               href="/cart"

@@ -18,6 +18,8 @@ const Navbar = () => {
     setMounted(true);
   }, []);
 
+  const canRenderAuthUi = mounted;
+
   return (
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
@@ -34,7 +36,7 @@ const Navbar = () => {
           <Link href="/orders" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Commandes
           </Link>
-          {isAdmin && (
+          {canRenderAuthUi && isAdmin && (
             <Link
               href="/admin"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
@@ -58,7 +60,7 @@ const Navbar = () => {
                 </motion.span>
               ))}
           </Link>
-          {!isAuthenticated ? (
+          {!canRenderAuthUi ? null : !isAuthenticated ? (
             <Link
               href="/login"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
@@ -101,7 +103,7 @@ const Navbar = () => {
             <div className="flex flex-col gap-4 p-4">
               <Link href="/" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-foreground">Accueil</Link>
               <Link href="/orders" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-foreground">Commandes</Link>
-              {isAdmin && (
+              {canRenderAuthUi && isAdmin && (
                 <Link href="/admin" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-foreground">
                   Admin
                 </Link>
@@ -112,7 +114,7 @@ const Navbar = () => {
                   <span className="bg-primary text-primary-foreground text-[10px] rounded-full px-1.5 py-0.5">{totalItems}</span>
                 )}
               </Link>
-              {!isAuthenticated ? (
+              {!canRenderAuthUi ? null : !isAuthenticated ? (
                 <Link href="/login" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-foreground">
                   Connexion
                 </Link>

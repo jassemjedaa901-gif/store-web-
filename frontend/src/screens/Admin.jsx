@@ -97,7 +97,9 @@ const Admin = () => {
         description:
           normalized.reason === "google_imgres"
             ? "Lien Google Images (imgres) ما يخدمش. استعمل رابط مباشر ينتهي بـ .jpg/.png أو Drive/Direct."
-            : "استعمل رابط صورة مباشر (jpg/png/webp) أو /products/...",
+            : normalized.reason === "non_direct_image_url"
+              ? "هذا رابط صفحة موش صورة. استعمل رابط مباشر ينتهي بـ .jpg/.png/.webp أو مسار محلي /products/..."
+              : "استعمل رابط صورة مباشر (jpg/png/webp) أو /products/...",
       });
       return;
     }
@@ -143,14 +145,14 @@ const Admin = () => {
               void resetMutation
                 .mutateAsync()
                 .then(() => {
-                  toast.message("Produits réinitialisés");
+                  toast.message("Catalogue par défaut ajouté (sans suppression)");
                   startCreate();
                 })
                 .catch(() => toast.error("Erreur"));
             }}
             className="px-4 py-2.5 rounded-md border border-border text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Reset
+            Ajouter défaut
           </button>
           <button
             onClick={startCreate}

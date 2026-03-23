@@ -1,10 +1,9 @@
 "use client";
 
 import ProductCard from "@/components/ProductCard";
-import { categories } from "@/data/products";
 import { motion } from "framer-motion";
 import heroBanner from "@/assets/hero-banner.jpg";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, getApiBase, isUsingDefaultLocalApi } from "@/lib/api";
 import Image from "next/image";
@@ -27,6 +26,10 @@ const Home = () => {
   });
 
   const products = data || [];
+  const categories = useMemo(
+    () => ["Tout", ...new Set(products.map((p) => p.category).filter(Boolean))],
+    [products]
+  );
 
   return (
     <div className="min-h-screen">

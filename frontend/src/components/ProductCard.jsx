@@ -2,9 +2,12 @@ import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/sonner";
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useCart();
+  const router = useRouter();
+  const { addToCart, setCart } = useCart();
 
   return (
     <motion.div
@@ -34,13 +37,29 @@ const ProductCard = ({ product }) => {
           </Link>
           <p className="text-sm text-muted-foreground mt-0.5">{product.price} €</p>
         </div>
-        <button
-          onClick={() => addToCart(product)}
-          className="shrink-0 bg-primary text-primary-foreground p-2 rounded-md hover:opacity-90 transition-opacity"
-          aria-label={`Ajouter ${product.name} au panier`}
-        >
-          <ShoppingBag size={16} />
-        </button>
+        <div className="shrink-0 flex items-center gap-2">
+          <button
+            onClick={() => {
+              addToCart(product);
+              toast.success("Ajoute au panier");
+            }}
+            className="bg-primary text-primary-foreground p-2 rounded-md hover:opacity-90 transition-opacity"
+            aria-label={`Ajouter ${product.name} au panier`}
+            title="Ajouter au panier"
+          >
+            <ShoppingBag size={16} />
+          </button>
+          <button
+            onClick={() => {
+              setCart([{ ...product, quantity: 1 }]);
+              toast.success("Achat direct", { description: "Redirection vers checkout" });
+              router.push("/checkout");
+            }}
+            className="px-2.5 py-1.5 rounded-md border border-border text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Buy Now
+          </button>
+        </div>
       </div>
     </motion.div>
   );

@@ -2,27 +2,44 @@
  * Backend mounts JSON routes under `/api` (backend: app.use("/api", apiRouter)).
  *
  * - If NEXT_PUBLIC_API_URL is set → use it (+ /api if missing).
- * - Else in the browser on localhost → http://localhost:5000/api (Next dev + Express local).
+ * - Else in the browser on localhost → http://localhost:5001/api (Next dev + Express local).
  * - Else in the browser (e.g. Vercel) → same origin /api (monorepo: front + API on one domain).
- * - Else (SSR without window) → http://localhost:5000/api.
+ * - Else (SSR without window) → http://localhost:5001/api.
  */
 export function getApiBase() {
   const env = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (typeof window !== "undefined") {
+    const h = window.location.hostname;
+    if (env) {
+      const origin = env.replace(/\/+$/, "");
+      const envHost = (() => {
+        try {
+          return new URL(origin).hostname;
+        } catch {
+          return "";
+        }
+      })();
+      const envIsLocalhost = envHost === "localhost" || envHost === "127.0.0.1";
+      const browserIsLocalhost = h === "localhost" || h === "127.0.0.1";
+      // In production browsers, ignore localhost API env values to avoid broken deploys.
+      if (envIsLocalhost && !browserIsLocalhost) {
+        return `${window.location.origin.replace(/\/+$/, "")}/api`;
+      }
+      return origin.endsWith("/api") ? origin : `${origin}/api`;
+    }
+    if (h === "localhost" || h === "127.0.0.1") {
+      return "http://localhost:5001/api";
+    }
+    return `${window.location.origin.replace(/\/+$/, "")}/api`;
+  }
   if (env) {
     const origin = env.replace(/\/+$/, "");
     return origin.endsWith("/api") ? origin : `${origin}/api`;
   }
-  if (typeof window !== "undefined") {
-    const h = window.location.hostname;
-    if (h === "localhost" || h === "127.0.0.1") {
-      return "http://localhost:5000/api";
-    }
-    return `${window.location.origin.replace(/\/+$/, "")}/api`;
-  }
-  return "http://localhost:5000/api";
+  return "http://localhost:5001/api";
 }
 
-/** True when requests use the default local Express URL (localhost:5000), not same-origin prod. */
+/** True when requests use the default local Express URL (localhost:5001), not same-origin prod. */
 export function isUsingDefaultLocalApi() {
   if (process.env.NEXT_PUBLIC_API_URL) return false;
   if (typeof window === "undefined") return true;
